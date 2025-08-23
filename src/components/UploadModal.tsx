@@ -1,14 +1,17 @@
+import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Upload, AlertCircle } from 'lucide-react';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Upload, X } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 interface UploadModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onUploadSuccess: () => void;
 }
 
 const departments = [
@@ -25,17 +28,103 @@ const departments = [
   'Chemistry'
 ];
 
-const categories = [
-  { value: 'question-papers', label: 'Question Paper' },
-  { value: 'study-materials', label: 'Study Material' },
-  { value: 'lab-manuals', label: 'Lab Manual' }
-];
+const UploadModal = ({ isOpen, onClose, onUploadSuccess }: UploadModalProps) => {
+  const [formData, setFormData] = useState({
+    title: '',
+    subject: '',
+    department: '',
+    category: '',
+    uploadedBy: '',
+  });
+  const [file, setFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const { toast } = useToast();
 
-const UploadModal = ({ isOpen, onClose }: UploadModalProps) => {
-  const handleSubmit = (e: React.FormEvent) => {
+  const formatFileSize = (bytes: number): string => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0];
+    if (selectedFile) {
+      setFile(selectedFile);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // This will be implemented when backend is connected
-    alert('Backend integration needed for file uploads!');
+    
+    if (!file || !formData.title || !formData.subject || !formData.department || !formData.category || !formData.uploadedBy) {
+      toast({
+        title: "Error",
+        description: "Please fill in all fields and select a file.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsUploading(true);
+
+    try {
+      // Upload file to storage
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+      const filePath = `${formData.category}/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('resources')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      // Insert resource metadata to database
+      const { error: insertError } = await supabase
+        .from('resources')
+        .insert([
+          {
+            title: formData.title,
+            subject: formData.subject,
+            department: formData.department,
+            category: formData.category,
+            uploaded_by: formData.uploadedBy,
+            file_size: formatFileSize(file.size),
+            file_path: filePath,
+            file_name: file.name,
+          },
+        ]);
+
+      if (insertError) throw insertError;
+
+      toast({
+        title: "Success!",
+        description: "Resource uploaded successfully.",
+      });
+
+      // Reset form
+      setFormData({
+        title: '',
+        subject: '',
+        department: '',
+        category: '',
+        uploadedBy: '',
+      });
+      setFile(null);
+      onUploadSuccess();
+      onClose();
+    } catch (error) {
+      console.error('Upload error:', error);
+      toast({
+        title: "Error",
+        description: "Failed to upload resource. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   return (
@@ -48,18 +137,13 @@ const UploadModal = ({ isOpen, onClose }: UploadModalProps) => {
           </DialogTitle>
         </DialogHeader>
         
-        <Alert>
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>
-            File upload functionality requires backend integration. Connect your project to Supabase to enable uploads.
-          </AlertDescription>
-        </Alert>
-        
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="title">Resource Title *</Label>
             <Input
               id="title"
+              value={formData.title}
+              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
               placeholder="e.g., Data Structures Mid-term 2023"
               required
             />
@@ -69,6 +153,8 @@ const UploadModal = ({ isOpen, onClose }: UploadModalProps) => {
             <Label htmlFor="subject">Subject *</Label>
             <Input
               id="subject"
+              value={formData.subject}
+              onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
               placeholder="e.g., Data Structures and Algorithms"
               required
             />
@@ -77,7 +163,11 @@ const UploadModal = ({ isOpen, onClose }: UploadModalProps) => {
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="department">Department *</Label>
-              <Select required>
+              <Select 
+                value={formData.department}
+                onValueChange={(value) => setFormData({ ...formData, department: value })}
+                required
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Select department" />
                 </SelectTrigger>
@@ -93,16 +183,18 @@ const UploadModal = ({ isOpen, onClose }: UploadModalProps) => {
             
             <div className="space-y-2">
               <Label htmlFor="category">Category *</Label>
-              <Select required>
+              <Select 
+                value={formData.category}
+                onValueChange={(value) => setFormData({ ...formData, category: value })}
+                required
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
                 <SelectContent>
-                  {categories.map((cat) => (
-                    <SelectItem key={cat.value} value={cat.value}>
-                      {cat.label}
-                    </SelectItem>
-                  ))}
+                  <SelectItem value="question-papers">Question Papers</SelectItem>
+                  <SelectItem value="study-materials">Study Materials</SelectItem>
+                  <SelectItem value="lab-manuals">Lab Manuals</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -112,6 +204,8 @@ const UploadModal = ({ isOpen, onClose }: UploadModalProps) => {
             <Label htmlFor="uploader">Your Name *</Label>
             <Input
               id="uploader"
+              value={formData.uploadedBy}
+              onChange={(e) => setFormData({ ...formData, uploadedBy: e.target.value })}
               placeholder="e.g., John Doe"
               required
             />
@@ -119,16 +213,40 @@ const UploadModal = ({ isOpen, onClose }: UploadModalProps) => {
           
           <div className="space-y-2">
             <Label htmlFor="file">Upload File *</Label>
-            <Input
-              id="file"
-              type="file"
-              accept=".pdf,.doc,.docx,.ppt,.pptx"
-              required
-              disabled
-              className="cursor-not-allowed"
-            />
+            <div className="flex items-center gap-2">
+              <Input
+                id="file"
+                type="file"
+                onChange={handleFileChange}
+                accept=".pdf,.doc,.docx,.ppt,.pptx,.txt"
+                required
+                className="hidden"
+              />
+              <label
+                htmlFor="file"
+                className="flex-1 flex items-center justify-center px-4 py-2 border border-dashed border-muted-foreground rounded-md cursor-pointer hover:border-primary transition-colors"
+              >
+                <Upload className="h-4 w-4 mr-2" />
+                {file ? file.name : 'Choose file'}
+              </label>
+              {file && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setFile(null)}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
+            {file && (
+              <p className="text-sm text-muted-foreground">
+                Size: {formatFileSize(file.size)}
+              </p>
+            )}
             <p className="text-sm text-muted-foreground">
-              Supported formats: PDF, DOC, DOCX, PPT, PPTX (Max 10MB)
+              Supported formats: PDF, DOC, DOCX, PPT, PPTX, TXT (Max 10MB)
             </p>
           </div>
           
@@ -136,8 +254,8 @@ const UploadModal = ({ isOpen, onClose }: UploadModalProps) => {
             <Button type="button" variant="outline" onClick={onClose} className="flex-1">
               Cancel
             </Button>
-            <Button type="submit" className="btn-primary flex-1" disabled>
-              Upload Resource
+            <Button type="submit" className="btn-primary flex-1" disabled={isUploading}>
+              {isUploading ? 'Uploading...' : 'Upload Resource'}
             </Button>
           </div>
         </form>

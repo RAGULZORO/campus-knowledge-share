@@ -14,7 +14,54 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      resources: {
+        Row: {
+          category: string
+          created_at: string
+          department: string
+          downloads: number
+          file_name: string
+          file_path: string
+          file_size: string
+          id: string
+          subject: string
+          title: string
+          updated_at: string
+          upload_date: string
+          uploaded_by: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          department: string
+          downloads?: number
+          file_name: string
+          file_path: string
+          file_size: string
+          id?: string
+          subject: string
+          title: string
+          updated_at?: string
+          upload_date?: string
+          uploaded_by: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          department?: string
+          downloads?: number
+          file_name?: string
+          file_path?: string
+          file_size?: string
+          id?: string
+          subject?: string
+          title?: string
+          updated_at?: string
+          upload_date?: string
+          uploaded_by?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

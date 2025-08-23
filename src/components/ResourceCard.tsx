@@ -13,6 +13,8 @@ export interface Resource {
   uploadDate: string;
   downloads: number;
   fileSize: string;
+  filePath?: string;
+  fileName?: string;
 }
 
 interface ResourceCardProps {
