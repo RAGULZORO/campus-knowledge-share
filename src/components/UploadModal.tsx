@@ -29,7 +29,6 @@ const departments = [
 const UploadModal = ({ isOpen, onClose, onUploadSuccess }: UploadModalProps) => {
   const [formData, setFormData] = useState({
     subject: '',
-    unit: '',
     department: '',
     category: '',
     uploadedBy: '',
@@ -86,7 +85,6 @@ const UploadModal = ({ isOpen, onClose, onUploadSuccess }: UploadModalProps) => 
           {
             title: formData.subject, // Use subject as title
             subject: formData.subject,
-            unit: formData.unit || null,
             department: formData.department,
             category: formData.category,
             uploaded_by: formData.uploadedBy,
@@ -106,7 +104,6 @@ const UploadModal = ({ isOpen, onClose, onUploadSuccess }: UploadModalProps) => 
       // Reset form
       setFormData({
         subject: '',
-        unit: '',
         department: '',
         category: '',
         uploadedBy: '',
@@ -145,16 +142,6 @@ const UploadModal = ({ isOpen, onClose, onUploadSuccess }: UploadModalProps) => 
               onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
               placeholder="e.g., Data Structures and Algorithms"
               required
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="unit">Unit</Label>
-            <Input
-              id="unit"
-              value={formData.unit}
-              onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
-              placeholder="e.g., Unit 1, Unit 2"
             />
           </div>
           

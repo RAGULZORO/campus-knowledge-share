@@ -1,13 +1,12 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Download, Calendar, User, Building, Trash2 } from 'lucide-react';
+import { Download, Calendar, User, Building } from 'lucide-react';
 
 export interface Resource {
   id: string;
   title: string;
   subject: string;
-  unit?: string;
   department: string;
   category: 'question-papers' | 'study-materials' | 'lab-manuals';
   uploadedBy: string;
@@ -21,7 +20,6 @@ export interface Resource {
 interface ResourceCardProps {
   resource: Resource;
   onDownload: (resource: Resource) => void;
-  onDelete: (resource: Resource) => void;
 }
 
 const getCategoryColor = (category: string) => {
@@ -50,7 +48,7 @@ const getCategoryLabel = (category: string) => {
   }
 };
 
-const ResourceCard = ({ resource, onDownload, onDelete }: ResourceCardProps) => {
+const ResourceCard = ({ resource, onDownload }: ResourceCardProps) => {
   return (
     <Card className="card-hover shadow-card">
       <CardHeader className="pb-3">
@@ -65,12 +63,6 @@ const ResourceCard = ({ resource, onDownload, onDelete }: ResourceCardProps) => 
       
       <CardContent className="py-2">
         <div className="space-y-2">
-          {resource.unit && (
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <span className="text-sm font-medium">Unit:</span>
-              <span className="text-sm">{resource.unit}</span>
-            </div>
-          )}
           <div className="flex items-center gap-2 text-muted-foreground">
             <Building className="h-4 w-4" />
             <span className="text-sm">{resource.department}</span>
@@ -93,23 +85,14 @@ const ResourceCard = ({ resource, onDownload, onDelete }: ResourceCardProps) => 
             <span className="mx-2">•</span>
             <span>{resource.fileSize}</span>
           </div>
-          <div className="flex gap-2">
-            <Button 
-              onClick={() => onDownload(resource)}
-              className="btn-primary"
-              size="sm"
-            >
-              <Download className="h-4 w-4 mr-2" />
-              Download
-            </Button>
-            <Button 
-              onClick={() => onDelete(resource)}
-              variant="destructive"
-              size="sm"
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
-          </div>
+          <Button 
+            onClick={() => onDownload(resource)}
+            className="btn-primary"
+            size="sm"
+          >
+            <Download className="h-4 w-4 mr-2" />
+            Download
+          </Button>
         </div>
       </CardFooter>
     </Card>
