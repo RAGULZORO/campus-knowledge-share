@@ -36,6 +36,7 @@ const ResourceGrid = ({ searchTerm, selectedCategory, refreshTrigger }: Resource
         id: item.id,
         title: item.title,
         subject: item.subject,
+        unit: item.unit,
         department: item.department,
         category: item.category as 'question-papers' | 'study-materials' | 'lab-manuals',
         uploadedBy: item.uploaded_by,
@@ -71,12 +72,13 @@ const ResourceGrid = ({ searchTerm, selectedCategory, refreshTrigger }: Resource
     // Enhanced search across multiple fields
     const titleMatch = resource.title.toLowerCase().includes(searchTermLower);
     const subjectMatch = resource.subject.toLowerCase().includes(searchTermLower);
+    const unitMatch = resource.unit?.toLowerCase().includes(searchTermLower);
     const departmentMatch = resource.department.toLowerCase().includes(searchTermLower);
     const categoryMatch = resource.category.toLowerCase().includes(searchTermLower);
     const uploaderMatch = resource.uploadedBy.toLowerCase().includes(searchTermLower);
     const fileNameMatch = resource.fileName?.toLowerCase().includes(searchTermLower);
     
-    return titleMatch || subjectMatch || departmentMatch || categoryMatch || uploaderMatch || fileNameMatch;
+    return titleMatch || subjectMatch || unitMatch || departmentMatch || categoryMatch || uploaderMatch || fileNameMatch;
   });
 
   const handleDownload = async (resource: Resource) => {
@@ -109,6 +111,40 @@ const ResourceGrid = ({ searchTerm, selectedCategory, refreshTrigger }: Resource
       toast({
         title: "Error",
         description: "Failed to download file. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDelete = async (resource: Resource) => {
+    try {
+      // Delete file from storage
+      const { error: storageError } = await supabase.storage
+        .from('resources')
+        .remove([resource.filePath!]);
+
+      if (storageError) throw storageError;
+
+      // Delete record from database
+      const { error: dbError } = await supabase
+        .from('resources')
+        .delete()
+        .eq('id', resource.id);
+
+      if (dbError) throw dbError;
+
+      // Update local state
+      setResources(prev => prev.filter(r => r.id !== resource.id));
+
+      toast({
+        title: "Success",
+        description: "Resource deleted successfully.",
+      });
+    } catch (error) {
+      console.error('Delete error:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete resource. Please try again.",
         variant: "destructive",
       });
     }
@@ -147,6 +183,7 @@ const ResourceGrid = ({ searchTerm, selectedCategory, refreshTrigger }: Resource
           key={resource.id}
           resource={resource}
           onDownload={handleDownload}
+          onDelete={handleDelete}
         />
       ))}
     </div>
