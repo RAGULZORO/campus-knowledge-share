@@ -21,7 +21,7 @@ const Hero = () => {
               <BookOpen className="h-5 w-5 mr-2" />
               Browse Resources
             </Button>
-            <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-primary font-semibold">
+            <Button size="lg" variant="hero" className="font-semibold">
               <Share2 className="h-5 w-5 mr-2" />
               Share Materials
             </Button>
