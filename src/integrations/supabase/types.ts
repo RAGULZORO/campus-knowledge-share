@@ -26,6 +26,7 @@ export type Database = {
           id: string
           subject: string
           title: string
+          unit: string | null
           updated_at: string
           upload_date: string
           uploaded_by: string
@@ -41,6 +42,7 @@ export type Database = {
           id?: string
           subject: string
           title: string
+          unit?: string | null
           updated_at?: string
           upload_date?: string
           uploaded_by: string
@@ -56,6 +58,7 @@ export type Database = {
           id?: string
           subject?: string
           title?: string
+          unit?: string | null
           updated_at?: string
           upload_date?: string
           uploaded_by?: string
