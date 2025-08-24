@@ -15,22 +15,19 @@ interface UploadModalProps {
 }
 
 const departments = [
-  'Computer Science',
-  'Electrical Engineering',
-  'Mechanical Engineering',
-  'Civil Engineering',
-  'Electronics & Communication',
-  'Information Technology',
-  'Chemical Engineering',
-  'Biotechnology',
-  'Mathematics',
-  'Physics',
-  'Chemistry'
+  'CSE',
+  'IT', 
+  'EEE',
+  'ECE',
+  'MECH',
+  'AGREE',
+  'BIO-TECH',
+  'BIO-MED',
+  'AIDS'
 ];
 
 const UploadModal = ({ isOpen, onClose, onUploadSuccess }: UploadModalProps) => {
   const [formData, setFormData] = useState({
-    title: '',
     subject: '',
     department: '',
     category: '',
@@ -58,7 +55,7 @@ const UploadModal = ({ isOpen, onClose, onUploadSuccess }: UploadModalProps) => 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!file || !formData.title || !formData.subject || !formData.department || !formData.category || !formData.uploadedBy) {
+    if (!file || !formData.subject || !formData.department || !formData.category || !formData.uploadedBy) {
       toast({
         title: "Error",
         description: "Please fill in all fields and select a file.",
@@ -86,7 +83,7 @@ const UploadModal = ({ isOpen, onClose, onUploadSuccess }: UploadModalProps) => 
         .from('resources')
         .insert([
           {
-            title: formData.title,
+            title: formData.subject, // Use subject as title
             subject: formData.subject,
             department: formData.department,
             category: formData.category,
@@ -106,7 +103,6 @@ const UploadModal = ({ isOpen, onClose, onUploadSuccess }: UploadModalProps) => 
 
       // Reset form
       setFormData({
-        title: '',
         subject: '',
         department: '',
         category: '',
@@ -138,17 +134,6 @@ const UploadModal = ({ isOpen, onClose, onUploadSuccess }: UploadModalProps) => 
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="title">Resource Title *</Label>
-            <Input
-              id="title"
-              value={formData.title}
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-              placeholder="e.g., Data Structures Mid-term 2023"
-              required
-            />
-          </div>
-          
           <div className="space-y-2">
             <Label htmlFor="subject">Subject *</Label>
             <Input

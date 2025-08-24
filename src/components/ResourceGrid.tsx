@@ -64,16 +64,19 @@ const ResourceGrid = ({ searchTerm, selectedCategory, refreshTrigger }: Resource
   }, [selectedCategory, refreshTrigger]);
 
   const filteredResources = resources.filter(resource => {
-    const searchTermLower = searchTerm.toLowerCase();
-    console.log('Search term:', searchTerm, 'Resources count:', resources.length);
-    
     if (!searchTerm) return true;
     
+    const searchTermLower = searchTerm.toLowerCase();
+    
+    // Enhanced search across multiple fields
     const titleMatch = resource.title.toLowerCase().includes(searchTermLower);
     const subjectMatch = resource.subject.toLowerCase().includes(searchTermLower);
     const departmentMatch = resource.department.toLowerCase().includes(searchTermLower);
+    const categoryMatch = resource.category.toLowerCase().includes(searchTermLower);
+    const uploaderMatch = resource.uploadedBy.toLowerCase().includes(searchTermLower);
+    const fileNameMatch = resource.fileName?.toLowerCase().includes(searchTermLower);
     
-    return titleMatch || subjectMatch || departmentMatch;
+    return titleMatch || subjectMatch || departmentMatch || categoryMatch || uploaderMatch || fileNameMatch;
   });
 
   const handleDownload = async (resource: Resource) => {
