@@ -7,7 +7,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Upload, X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/hooks/use-auth';
 
 interface UploadModalProps {
   isOpen: boolean;
@@ -38,7 +37,6 @@ const UploadModal = ({ isOpen, onClose, onUploadSuccess }: UploadModalProps) => 
   const [file, setFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const { toast } = useToast();
-  const { user } = useAuth();
 
   const formatFileSize = (bytes: number): string => {
     if (bytes === 0) return '0 Bytes';
@@ -95,7 +93,6 @@ const UploadModal = ({ isOpen, onClose, onUploadSuccess }: UploadModalProps) => 
             file_size: formatFileSize(file.size),
             file_path: filePath,
             file_name: file.name,
-            user_id: user?.id, // Add user_id for RLS
           },
         ]);
 

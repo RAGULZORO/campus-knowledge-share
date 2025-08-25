@@ -1,9 +1,6 @@
-import { Search, Upload, BookOpen, LogOut, User } from 'lucide-react';
+import { Search, Upload, BookOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useAuth } from '@/hooks/use-auth';
-import { useNavigate } from 'react-router-dom';
-import { useToast } from '@/hooks/use-toast';
 
 interface HeaderProps {
   searchQuery: string;
@@ -12,26 +9,6 @@ interface HeaderProps {
 }
 
 const Header = ({ searchQuery, onSearchChange, onUploadClick }: HeaderProps) => {
-  const { user, signOut } = useAuth();
-  const navigate = useNavigate();
-  const { toast } = useToast();
-
-  const handleSignOut = async () => {
-    const { error } = await signOut();
-    if (error) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
-    } else {
-      toast({
-        title: "Success",
-        description: "Signed out successfully.",
-      });
-    }
-  };
-
   return (
     <header className="bg-card shadow-card border-b sticky top-0 z-50">
       <div className="container mx-auto px-4 py-4">
@@ -64,22 +41,6 @@ const Header = ({ searchQuery, onSearchChange, onUploadClick }: HeaderProps) => 
               <Upload className="h-4 w-4 mr-2" />
               Upload Resource
             </Button>
-            
-            {user ? (
-              <div className="flex items-center gap-2">
-                <Button variant="outline" size="sm" className="flex items-center gap-2">
-                  <User className="h-4 w-4" />
-                  {user.email}
-                </Button>
-                <Button variant="outline" size="sm" onClick={handleSignOut}>
-                  <LogOut className="h-4 w-4" />
-                </Button>
-              </div>
-            ) : (
-              <Button variant="outline" onClick={() => navigate('/auth')}>
-                Sign In
-              </Button>
-            )}
           </div>
         </div>
       </div>

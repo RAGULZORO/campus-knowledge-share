@@ -45,7 +45,6 @@ const ResourceGrid = ({ searchTerm, selectedCategory, refreshTrigger }: Resource
         fileSize: item.file_size,
         filePath: item.file_path,
         fileName: item.file_name,
-        userId: item.user_id,
       }));
 
       setResources(transformedResources);

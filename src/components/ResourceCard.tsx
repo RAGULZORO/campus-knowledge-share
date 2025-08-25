@@ -2,7 +2,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Download, Calendar, User, Building, Trash2 } from 'lucide-react';
-import { useAuth } from '@/hooks/use-auth';
 
 export interface Resource {
   id: string;
@@ -17,7 +16,6 @@ export interface Resource {
   fileSize: string;
   filePath?: string;
   fileName?: string;
-  userId?: string;
 }
 
 interface ResourceCardProps {
@@ -53,9 +51,6 @@ const getCategoryLabel = (category: string) => {
 };
 
 const ResourceCard = ({ resource, onDownload, onDelete }: ResourceCardProps) => {
-  const { user } = useAuth();
-  const canDelete = user && resource.userId === user.id;
-
   return (
     <Card className="card-hover shadow-card">
       <CardHeader className="pb-3">
@@ -107,15 +102,13 @@ const ResourceCard = ({ resource, onDownload, onDelete }: ResourceCardProps) => 
               <Download className="h-4 w-4 mr-2" />
               Download
             </Button>
-            {canDelete && (
-              <Button 
-                onClick={() => onDelete(resource)}
-                variant="destructive"
-                size="sm"
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            )}
+            <Button 
+              onClick={() => onDelete(resource)}
+              variant="destructive"
+              size="sm"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
           </div>
         </div>
       </CardFooter>
