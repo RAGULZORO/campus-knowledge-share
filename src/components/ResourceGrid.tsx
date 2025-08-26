@@ -153,7 +153,7 @@ const ResourceGrid = ({ searchTerm, selectedCategory, refreshTrigger }: Resource
 
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         {Array.from({ length: 6 }).map((_, index) => (
           <div key={index} className="animate-pulse">
             <div className="bg-muted rounded-lg h-48"></div>
@@ -178,7 +178,7 @@ const ResourceGrid = ({ searchTerm, selectedCategory, refreshTrigger }: Resource
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
       {filteredResources.map((resource) => (
         <ResourceCard
           key={resource.id}

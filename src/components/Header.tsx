@@ -46,40 +46,44 @@ const Header = ({ searchQuery, onSearchChange, onUploadClick }: HeaderProps) => 
             </div>
           </div>
           
-          <div className="flex items-center gap-4 w-full md:w-auto">
-            <div className="relative flex-1 md:w-96">
+          <div className="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto">
+            <div className="relative w-full sm:flex-1 md:w-96">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
               <Input
                 type="text"
-                placeholder="Search resources, subjects, or departments..."
+                placeholder="Search resources..."
                 value={searchQuery}
                 onChange={(e) => onSearchChange(e.target.value)}
                 className="pl-10 w-full"
               />
             </div>
-            <Button 
-              onClick={onUploadClick}
-              className="btn-accent whitespace-nowrap"
-            >
-              <Upload className="h-4 w-4 mr-2" />
-              Upload Resource
-            </Button>
-            
-            {user ? (
-              <div className="flex items-center gap-2">
-                <Button variant="outline" size="sm" className="flex items-center gap-2">
-                  <User className="h-4 w-4" />
-                  {(user.user_metadata?.display_name || user.email || 'U')[0].toUpperCase()}
-                </Button>
-                <Button variant="outline" size="sm" onClick={handleSignOut}>
-                  <LogOut className="h-4 w-4" />
-                </Button>
-              </div>
-            ) : (
-              <Button variant="outline" onClick={() => navigate('/auth')}>
-                Sign In
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <Button 
+                onClick={onUploadClick}
+                className="btn-accent whitespace-nowrap flex-1 sm:flex-none"
+                size="sm"
+              >
+                <Upload className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Upload Resource</span>
+                <span className="sm:hidden">Upload</span>
               </Button>
-            )}
+              
+              {user ? (
+                <div className="flex items-center gap-2">
+                  <Button variant="outline" size="sm" className="flex items-center gap-2">
+                    <User className="h-4 w-4" />
+                    <span className="hidden sm:inline">{(user.user_metadata?.display_name || user.email || 'U')[0].toUpperCase()}</span>
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={handleSignOut}>
+                    <LogOut className="h-4 w-4" />
+                  </Button>
+                </div>
+              ) : (
+                <Button variant="outline" onClick={() => navigate('/auth')} size="sm">
+                  Sign In
+                </Button>
+              )}
+            </div>
           </div>
         </div>
       </div>

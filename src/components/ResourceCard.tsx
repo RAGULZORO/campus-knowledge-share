@@ -92,16 +92,16 @@ const ResourceCard = ({ resource, onDownload, onDelete }: ResourceCardProps) => 
       </CardContent>
       
       <CardFooter className="pt-3">
-        <div className="flex items-center justify-between w-full">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between w-full gap-3">
           <div className="text-sm text-muted-foreground">
             <span>{resource.downloads} downloads</span>
             <span className="mx-2">•</span>
             <span>{resource.fileSize}</span>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 w-full sm:w-auto">
             <Button 
               onClick={() => onDownload(resource)}
-              className="btn-primary"
+              className="btn-primary flex-1 sm:flex-none"
               size="sm"
             >
               <Download className="h-4 w-4 mr-2" />
