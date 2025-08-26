@@ -2,6 +2,8 @@ import { Search, Upload, BookOpen, LogOut, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/hooks/use-auth';
+import { useNavigate } from 'react-router-dom';
+import { useToast } from '@/hooks/use-toast';
 
 interface HeaderProps {
   searchQuery: string;
@@ -11,6 +13,24 @@ interface HeaderProps {
 
 const Header = ({ searchQuery, onSearchChange, onUploadClick }: HeaderProps) => {
   const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
+  const handleSignOut = async () => {
+    const { error } = await signOut();
+    if (error) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Success",
+        description: "Signed out successfully.",
+      });
+    }
+  };
 
   return (
     <header className="bg-card shadow-card border-b sticky top-0 z-50">
@@ -45,22 +65,21 @@ const Header = ({ searchQuery, onSearchChange, onUploadClick }: HeaderProps) => 
               Upload Resource
             </Button>
             
-            <div className="flex items-center gap-2">
-              <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted">
-                <User className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm text-foreground">
-                  {user?.email?.split('@')[0]}
-                </span>
+            {user ? (
+              <div className="flex items-center gap-2">
+                <Button variant="outline" size="sm" className="flex items-center gap-2">
+                  <User className="h-4 w-4" />
+                  {user.email}
+                </Button>
+                <Button variant="outline" size="sm" onClick={handleSignOut}>
+                  <LogOut className="h-4 w-4" />
+                </Button>
               </div>
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={signOut}
-                className="whitespace-nowrap"
-              >
-                <LogOut className="h-4 w-4" />
+            ) : (
+              <Button variant="outline" onClick={() => navigate('/auth')}>
+                Sign In
               </Button>
-            </div>
+            )}
           </div>
         </div>
       </div>

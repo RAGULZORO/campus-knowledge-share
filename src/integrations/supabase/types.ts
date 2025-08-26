@@ -14,6 +14,27 @@ export type Database = {
   }
   public: {
     Tables: {
+      profiles: {
+        Row: {
+          created_at: string
+          display_name: string | null
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string | null
+          id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       resources: {
         Row: {
           category: string
@@ -30,6 +51,7 @@ export type Database = {
           updated_at: string
           upload_date: string
           uploaded_by: string
+          user_id: string | null
         }
         Insert: {
           category: string
@@ -46,6 +68,7 @@ export type Database = {
           updated_at?: string
           upload_date?: string
           uploaded_by: string
+          user_id?: string | null
         }
         Update: {
           category?: string
@@ -62,6 +85,7 @@ export type Database = {
           updated_at?: string
           upload_date?: string
           uploaded_by?: string
+          user_id?: string | null
         }
         Relationships: []
       }
