@@ -1,6 +1,7 @@
-import { Search, Upload, BookOpen } from 'lucide-react';
+import { Search, Upload, BookOpen, LogOut, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useAuth } from '@/hooks/use-auth';
 
 interface HeaderProps {
   searchQuery: string;
@@ -9,6 +10,8 @@ interface HeaderProps {
 }
 
 const Header = ({ searchQuery, onSearchChange, onUploadClick }: HeaderProps) => {
+  const { user, signOut } = useAuth();
+
   return (
     <header className="bg-card shadow-card border-b sticky top-0 z-50">
       <div className="container mx-auto px-4 py-4">
@@ -41,6 +44,23 @@ const Header = ({ searchQuery, onSearchChange, onUploadClick }: HeaderProps) => 
               <Upload className="h-4 w-4 mr-2" />
               Upload Resource
             </Button>
+            
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted">
+                <User className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm text-foreground">
+                  {user?.email?.split('@')[0]}
+                </span>
+              </div>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={signOut}
+                className="whitespace-nowrap"
+              >
+                <LogOut className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         </div>
       </div>
