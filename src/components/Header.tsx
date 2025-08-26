@@ -69,7 +69,7 @@ const Header = ({ searchQuery, onSearchChange, onUploadClick }: HeaderProps) => 
               <div className="flex items-center gap-2">
                 <Button variant="outline" size="sm" className="flex items-center gap-2">
                   <User className="h-4 w-4" />
-                  {user.email}
+                  {(user.user_metadata?.display_name || user.email || 'U')[0].toUpperCase()}
                 </Button>
                 <Button variant="outline" size="sm" onClick={handleSignOut}>
                   <LogOut className="h-4 w-4" />
