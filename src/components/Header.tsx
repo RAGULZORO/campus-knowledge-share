@@ -1,4 +1,5 @@
-import { Search, Upload, BookOpen, LogOut, User } from 'lucide-react';
+
+import { Search, Upload, StickyNote, LogOut, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/hooks/use-auth';
@@ -38,10 +39,10 @@ const Header = ({ searchQuery, onSearchChange, onUploadClick }: HeaderProps) => 
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="flex items-center justify-center w-10 h-10 rounded-lg gradient-primary">
-              <BookOpen className="h-6 w-6 text-white" />
+              <StickyNote className="h-6 w-6 text-white" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-foreground">EduShare</h1>
+              <h1 className="text-xl font-bold text-foreground">NOTE NEST</h1>
               <p className="text-sm text-muted-foreground">Academic Resource Hub</p>
             </div>
           </div>
