@@ -90,13 +90,19 @@ const ResourceGrid = ({ searchTerm, selectedCategory, refreshTrigger }: Resource
         .update({ downloads: resource.downloads + 1 })
         .eq('id', resource.id);
 
-      // Get signed URL for file download
+      // Get public URL for file download
       const { data } = supabase.storage
         .from('resources')
         .getPublicUrl(resource.filePath!);
 
-      // Open file in new tab
-      window.open(data.publicUrl, '_blank');
+      // Create a temporary anchor element to trigger download
+      const link = document.createElement('a');
+      link.href = data.publicUrl;
+      link.download = resource.fileName || 'download';
+      link.target = '_blank';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
 
       // Update local state
       setResources(prev => prev.map(r => 
