@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { useAuth } from '@/hooks/use-auth';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
+import { ThemeToggle } from '@/components/theme-toggle';
 
 interface HeaderProps {
   searchQuery: string;
@@ -59,6 +60,7 @@ const Header = ({ searchQuery, onSearchChange, onUploadClick }: HeaderProps) => 
               />
             </div>
             <div className="flex items-center gap-2 w-full sm:w-auto">
+              <ThemeToggle />
               <Button 
                 onClick={onUploadClick}
                 className="btn-accent whitespace-nowrap flex-1 sm:flex-none"
