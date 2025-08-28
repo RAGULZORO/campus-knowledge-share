@@ -17,7 +17,7 @@ const Hero = () => {
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-            <Button size="lg" className="text-white hover:bg-white/90 hover:text-primary dark:hover:bg-white dark:hover:text-primary font-semibold">
+            <Button size="lg" className="font-semibold">
               <BookOpen className="h-5 w-5 mr-2" />
               Browse Resources
             </Button>
