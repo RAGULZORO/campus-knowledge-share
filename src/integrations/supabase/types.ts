@@ -14,80 +14,121 @@ export type Database = {
   }
   public: {
     Tables: {
-      profiles: {
+      categories: {
         Row: {
-          created_at: string
-          display_name: string | null
+          created_at: string | null
+          description: string | null
+          icon: string | null
           id: string
-          updated_at: string
+          name: string
         }
         Insert: {
-          created_at?: string
-          display_name?: string | null
-          id: string
-          updated_at?: string
+          created_at?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          name: string
         }
         Update: {
-          created_at?: string
-          display_name?: string | null
+          created_at?: string | null
+          description?: string | null
+          icon?: string | null
           id?: string
-          updated_at?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          created_at: string | null
+          department: string | null
+          display_name: string | null
+          email: string | null
+          id: string
+          updated_at: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string | null
+          department?: string | null
+          display_name?: string | null
+          email?: string | null
+          id: string
+          updated_at?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string | null
+          department?: string | null
+          display_name?: string | null
+          email?: string | null
+          id?: string
+          updated_at?: string | null
         }
         Relationships: []
       }
       resources: {
         Row: {
-          category: string
+          category_id: string | null
           created_at: string
           department: string
-          downloads: number
-          file_name: string
-          file_path: string
-          file_size: string
+          description: string | null
+          download_count: number
+          file_size: string | null
+          file_url: string | null
           id: string
           subject: string
           title: string
-          unit: string | null
+          type: string
           updated_at: string
-          upload_date: string
           uploaded_by: string
           user_id: string | null
         }
         Insert: {
-          category: string
+          category_id?: string | null
           created_at?: string
           department: string
-          downloads?: number
-          file_name: string
-          file_path: string
-          file_size: string
+          description?: string | null
+          download_count?: number
+          file_size?: string | null
+          file_url?: string | null
           id?: string
           subject: string
           title: string
-          unit?: string | null
+          type: string
           updated_at?: string
-          upload_date?: string
           uploaded_by: string
           user_id?: string | null
         }
         Update: {
-          category?: string
+          category_id?: string | null
           created_at?: string
           department?: string
-          downloads?: number
-          file_name?: string
-          file_path?: string
-          file_size?: string
+          description?: string | null
+          download_count?: number
+          file_size?: string | null
+          file_url?: string | null
           id?: string
           subject?: string
           title?: string
-          unit?: string | null
+          type?: string
           updated_at?: string
-          upload_date?: string
           uploaded_by?: string
           user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "resources_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
