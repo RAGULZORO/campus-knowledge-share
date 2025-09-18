@@ -81,6 +81,11 @@ const UploadModal = ({ isOpen, onClose, onUploadSuccess }: UploadModalProps) => 
 
       if (uploadError) throw uploadError;
 
+      // Get the public URL for the uploaded file
+      const { data: urlData } = supabase.storage
+        .from('resources')
+        .getPublicUrl(filePath);
+
       // Insert resource metadata to database
       const { error: insertError } = await supabase
         .from('resources')
@@ -88,13 +93,12 @@ const UploadModal = ({ isOpen, onClose, onUploadSuccess }: UploadModalProps) => 
           {
             title: formData.subject, // Use subject as title
             subject: formData.subject,
-            unit: formData.unit || null,
+            description: formData.unit || null, // Use unit as description
             department: formData.department,
-            category: formData.category,
+            type: formData.category, // Use category as type
             uploaded_by: formData.uploadedBy,
             file_size: formatFileSize(file.size),
-            file_path: filePath,
-            file_name: file.name,
+            file_url: urlData.publicUrl, // Store the public URL
             user_id: user?.id, // Add user_id for RLS
           },
         ]);

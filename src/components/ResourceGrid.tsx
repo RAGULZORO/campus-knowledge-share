@@ -21,10 +21,10 @@ const ResourceGrid = ({ searchTerm, selectedCategory, refreshTrigger }: Resource
       let query = supabase
         .from('resources')
         .select('*')
-        .order('upload_date', { ascending: false });
+        .order('created_at', { ascending: false });
 
       if (selectedCategory && selectedCategory !== 'all') {
-        query = query.eq('category', selectedCategory);
+        query = query.eq('type', selectedCategory);
       }
 
       const { data, error } = await query;
@@ -36,15 +36,15 @@ const ResourceGrid = ({ searchTerm, selectedCategory, refreshTrigger }: Resource
         id: item.id,
         title: item.title,
         subject: item.subject,
-        unit: item.unit,
+        unit: item.description || '', // Use description as unit or empty
         department: item.department,
-        category: item.category as 'question-papers' | 'study-materials' | 'lab-manuals',
+        category: item.type as 'question-papers' | 'study-materials' | 'lab-manuals',
         uploadedBy: item.uploaded_by,
-        uploadDate: new Date(item.upload_date).toLocaleDateString(),
-        downloads: item.downloads,
-        fileSize: item.file_size,
-        filePath: item.file_path,
-        fileName: item.file_name,
+        uploadDate: new Date(item.created_at).toLocaleDateString(),
+        downloads: item.download_count,
+        fileSize: item.file_size || '',
+        filePath: item.file_url || '',
+        fileName: item.title, // Use title as filename
         userId: item.user_id,
       }));
 
@@ -87,7 +87,7 @@ const ResourceGrid = ({ searchTerm, selectedCategory, refreshTrigger }: Resource
       // Update download count
       await supabase
         .from('resources')
-        .update({ downloads: resource.downloads + 1 })
+        .update({ download_count: resource.downloads + 1 })
         .eq('id', resource.id);
 
       // Get public URL for file download
