@@ -197,9 +197,9 @@ const UploadModal = ({ isOpen, onClose, onUploadSuccess }: UploadModalProps) => 
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="question-papers">Question Papers</SelectItem>
-                  <SelectItem value="study-materials">Study Materials</SelectItem>
-                  <SelectItem value="lab-manuals">Lab Manuals</SelectItem>
+                  <SelectItem value="question-paper">Question Papers</SelectItem>
+                  <SelectItem value="study-material">Study Materials</SelectItem>
+                  <SelectItem value="lab-manual">Lab Manuals</SelectItem>
                 </SelectContent>
               </Select>
             </div>
