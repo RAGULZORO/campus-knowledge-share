@@ -73,6 +73,7 @@ export type Database = {
       }
       resources: {
         Row: {
+          ai_analysis: string | null
           category_id: string | null
           created_at: string
           department: string
@@ -81,6 +82,10 @@ export type Database = {
           file_size: string | null
           file_url: string | null
           id: string
+          review_notes: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string | null
           subject: string
           title: string
           type: string
@@ -89,6 +94,7 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          ai_analysis?: string | null
           category_id?: string | null
           created_at?: string
           department: string
@@ -97,6 +103,10 @@ export type Database = {
           file_size?: string | null
           file_url?: string | null
           id?: string
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string | null
           subject: string
           title: string
           type: string
@@ -105,6 +115,7 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          ai_analysis?: string | null
           category_id?: string | null
           created_at?: string
           department?: string
@@ -113,6 +124,10 @@ export type Database = {
           file_size?: string | null
           file_url?: string | null
           id?: string
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string | null
           subject?: string
           title?: string
           type?: string

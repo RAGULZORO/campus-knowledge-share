@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Shield, Download, Trash2, ArrowLeft, FileText, Users, HardDrive, Calendar } from 'lucide-react';
+import { Shield, Download, Trash2, ArrowLeft, FileText, Users, HardDrive, Calendar, AlertTriangle } from 'lucide-react';
+import AdminReviewDashboard from '@/components/AdminReviewDashboard';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/use-auth';
 import { useAdmin } from '@/hooks/use-admin';
@@ -26,6 +27,8 @@ interface AdminResource {
   uploader_email: string | null;
   uploader_display_name: string | null;
   uploader_department: string | null;
+  status?: string;
+  [key: string]: any; // Allow additional properties from the view
 }
 
 const Admin = () => {
@@ -35,8 +38,10 @@ const Admin = () => {
     totalResources: 0,
     totalUsers: 0,
     totalDownloads: 0,
-    recentUploads: 0
+    recentUploads: 0,
+    pendingReview: 0
   });
+  const [activeTab, setActiveTab] = useState<'overview' | 'pending'>('overview');
   
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -74,7 +79,7 @@ const Admin = () => {
         return;
       }
 
-      setResources(resourcesData || []);
+      setResources((resourcesData || []) as AdminResource[]);
 
       // Calculate stats
       const totalResources = resourcesData?.length || 0;
@@ -87,12 +92,16 @@ const Admin = () => {
       const sevenDaysAgo = new Date();
       sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
       const recentUploads = resourcesData?.filter(r => new Date(r.created_at) > sevenDaysAgo).length || 0;
+      
+      // Get pending review count
+      const pendingReview = resourcesData?.filter((r: any) => r.status === 'pending_review').length || 0;
 
       setStats({
         totalResources,
         totalUsers: uniqueUploaders.size,
         totalDownloads,
-        recentUploads
+        recentUploads,
+        pendingReview
       });
 
     } catch (error) {
@@ -185,14 +194,36 @@ const Admin = () => {
               <p className="text-muted-foreground">Manage uploaded resources and users</p>
             </div>
           </div>
-          <Button variant="outline" onClick={() => navigate('/')} className="flex items-center gap-2">
-            <ArrowLeft className="h-4 w-4" />
-            Back to Home
-          </Button>
+          <div className="flex gap-3">
+            <div className="flex gap-2">
+              <Button 
+                variant={activeTab === 'overview' ? 'default' : 'outline'}
+                onClick={() => setActiveTab('overview')}
+              >
+                Overview
+              </Button>
+              <Button 
+                variant={activeTab === 'pending' ? 'default' : 'outline'}
+                onClick={() => setActiveTab('pending')}
+                className="relative"
+              >
+                Pending Review
+                {stats.pendingReview > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                    {stats.pendingReview}
+                  </span>
+                )}
+              </Button>
+            </div>
+            <Button variant="outline" onClick={() => navigate('/')} className="flex items-center gap-2">
+              <ArrowLeft className="h-4 w-4" />
+              Back to Home
+            </Button>
+          </div>
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Resources</CardTitle>
@@ -233,10 +264,23 @@ const Admin = () => {
               <p className="text-xs text-muted-foreground">Last 7 days</p>
             </CardContent>
           </Card>
+          
+          <Card className={stats.pendingReview > 0 ? "border-amber-200 bg-amber-50" : ""}>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Pending Review</CardTitle>
+              <AlertTriangle className={`h-4 w-4 ${stats.pendingReview > 0 ? 'text-amber-600' : 'text-muted-foreground'}`} />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.pendingReview}</div>
+              <p className="text-xs text-muted-foreground">Files awaiting review</p>
+            </CardContent>
+          </Card>
         </div>
 
-        {/* Resources Table */}
-        <Card>
+        {/* Content based on active tab */}
+        {activeTab === 'overview' ? (
+          /* Resources Table */
+          <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <HardDrive className="h-5 w-5" />
@@ -253,6 +297,7 @@ const Admin = () => {
                     <TableHead>Department</TableHead>
                     <TableHead>Uploader</TableHead>
                     <TableHead>Email</TableHead>
+                    <TableHead>Status</TableHead>
                     <TableHead>Downloads</TableHead>
                     <TableHead>Size</TableHead>
                     <TableHead>Upload Date</TableHead>
@@ -260,7 +305,7 @@ const Admin = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {resources.map((resource) => (
+                  {resources.filter(r => r.status !== 'pending_review').map((resource) => (
                     <TableRow key={resource.id}>
                       <TableCell className="font-medium">
                         <div>
@@ -281,6 +326,11 @@ const Admin = () => {
                       </TableCell>
                       <TableCell className="text-sm">
                         {resource.uploader_email || 'N/A'}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={resource.status === 'approved' ? 'default' : 'secondary'}>
+                          {resource.status === 'approved' ? 'Published' : resource.status}
+                        </Badge>
                       </TableCell>
                       <TableCell>{resource.download_count}</TableCell>
                       <TableCell>{resource.file_size || 'N/A'}</TableCell>
@@ -329,14 +379,18 @@ const Admin = () => {
                 </TableBody>
               </Table>
               
-              {resources.length === 0 && (
+              {resources.filter(r => r.status !== 'pending_review').length === 0 && (
                 <div className="text-center py-8 text-muted-foreground">
-                  No resources found.
+                  No approved/rejected resources found.
                 </div>
               )}
             </div>
           </CardContent>
-        </Card>
+          </Card>
+        ) : (
+          /* Pending Review Dashboard */
+          <AdminReviewDashboard />
+        )}
       </div>
     </div>
   );
