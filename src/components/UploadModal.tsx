@@ -169,20 +169,9 @@ const UploadModal = ({ isOpen, onClose, onUploadSuccess }: UploadModalProps) => 
         .from('resources')
         .getPublicUrl(filePath);
 
-      // Determine upload status based on analysis
-      let status = 'approved';
-      let successMessage = 'Resource uploaded successfully.';
-      
-      if (file.type === 'application/pdf' && analysisResult) {
-        if (!analysisResult.isStudyRelated || analysisResult.confidence <= 70) {
-          status = 'pending_review';
-          successMessage = 'File uploaded and sent to admin for review.';
-        }
-      } else if (file.type === 'application/pdf') {
-        // If PDF analysis failed, require review
-        status = 'pending_review';
-        successMessage = 'File uploaded and sent to admin for review.';
-      }
+      // All files now require admin review
+      const status = 'pending_review';
+      const successMessage = 'File uploaded and sent to admin for review.';
 
       // Insert resource metadata to database
       const { error: insertError } = await supabase
@@ -204,6 +193,23 @@ const UploadModal = ({ isOpen, onClose, onUploadSuccess }: UploadModalProps) => 
         ]);
 
       if (insertError) throw insertError;
+
+      // Send email notification to admin
+      try {
+        await supabase.functions.invoke('send-upload-notification', {
+          body: {
+            fileName: file.name,
+            uploaderName: formData.uploadedBy,
+            subject: formData.subject,
+            department: formData.department,
+            category: formData.category,
+          }
+        });
+        console.log('Admin notification sent successfully');
+      } catch (emailError) {
+        console.error('Failed to send admin notification:', emailError);
+        // Don't fail the upload if email fails
+      }
 
       toast({
         title: "Success!",
