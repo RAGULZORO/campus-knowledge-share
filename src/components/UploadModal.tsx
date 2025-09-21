@@ -153,41 +153,25 @@ const UploadModal = ({ isOpen, onClose, onUploadSuccess }: UploadModalProps) => 
     setIsUploading(true);
 
     try {
-      // Upload file to storage
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
-      const filePath = `${formData.category}/${fileName}`;
+      // Convert file to base64 for temporary storage
+      const fileBuffer = await file.arrayBuffer();
+      const base64String = btoa(String.fromCharCode(...new Uint8Array(fileBuffer)));
 
-      const { error: uploadError } = await supabase.storage
-        .from('resources')
-        .upload(filePath, file);
-
-      if (uploadError) throw uploadError;
-
-      // Get the public URL for the uploaded file
-      const { data: urlData } = supabase.storage
-        .from('resources')
-        .getPublicUrl(filePath);
-
-      // All files now require admin review
-      const status = 'pending_review';
-      const successMessage = 'File uploaded and sent to admin for review.';
-
-      // Insert resource metadata to database
+      // Store file temporarily in pending_uploads table (not in storage yet)
       const { error: insertError } = await supabase
-        .from('resources')
+        .from('pending_uploads')
         .insert([
           {
-            title: formData.subject, // Use subject as title
+            title: formData.subject,
             subject: formData.subject,
-            description: formData.unit || null, // Use unit as description
+            description: formData.unit || null,
             department: formData.department,
-            type: formData.category, // Use category as type
+            type: formData.category,
             uploaded_by: formData.uploadedBy,
+            file_name: file.name,
+            file_data: base64String,
             file_size: formatFileSize(file.size),
-            file_url: urlData.publicUrl, // Store the public URL
-            user_id: user?.id, // Add user_id for RLS
-            status: status,
+            user_id: user?.id,
             ai_analysis: analysisResult ? JSON.stringify(analysisResult) : null,
           },
         ]);
@@ -213,7 +197,7 @@ const UploadModal = ({ isOpen, onClose, onUploadSuccess }: UploadModalProps) => 
 
       toast({
         title: "Success!",
-        description: successMessage,
+        description: "File sent to admin for review. You'll be notified once it's approved.",
       });
 
       // Reset form

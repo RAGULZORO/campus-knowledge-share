@@ -38,6 +38,57 @@ export type Database = {
         }
         Relationships: []
       }
+      pending_uploads: {
+        Row: {
+          ai_analysis: string | null
+          created_at: string
+          department: string
+          description: string | null
+          file_data: string
+          file_name: string
+          file_size: string
+          id: string
+          subject: string
+          title: string
+          type: string
+          updated_at: string
+          uploaded_by: string
+          user_id: string | null
+        }
+        Insert: {
+          ai_analysis?: string | null
+          created_at?: string
+          department: string
+          description?: string | null
+          file_data: string
+          file_name: string
+          file_size: string
+          id?: string
+          subject: string
+          title: string
+          type: string
+          updated_at?: string
+          uploaded_by: string
+          user_id?: string | null
+        }
+        Update: {
+          ai_analysis?: string | null
+          created_at?: string
+          department?: string
+          description?: string | null
+          file_data?: string
+          file_name?: string
+          file_size?: string
+          id?: string
+          subject?: string
+          title?: string
+          type?: string
+          updated_at?: string
+          uploaded_by?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
