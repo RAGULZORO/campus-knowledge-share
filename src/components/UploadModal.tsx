@@ -69,7 +69,7 @@ const UploadModal = ({ isOpen, onClose, onUploadSuccess }: UploadModalProps) => 
       uploadedBy: z.string().trim().min(1, "Your name is required").max(50, "Name must be less than 50 characters"),
     };
 
-    if (category === 'lab-manual') {
+    if (category === 'lab-manuals') {
       return z.object({
         ...baseSchema,
         year: z.string().trim().min(1, "Year is required"),
@@ -78,7 +78,7 @@ const UploadModal = ({ isOpen, onClose, onUploadSuccess }: UploadModalProps) => 
       });
     }
 
-    if (category === 'question-paper') {
+    if (category === 'question-papers') {
       return z.object({
         ...baseSchema,
         year: z.string().trim().min(1, "Year is required"),
@@ -129,16 +129,16 @@ const UploadModal = ({ isOpen, onClose, onUploadSuccess }: UploadModalProps) => 
 
       // Create title based on category
       let title = formData.subject;
-      if (formData.category === 'lab-manual' && formData.name) {
+      if (formData.category === 'lab-manuals' && formData.name) {
         title = `${formData.subject} - ${formData.name}`;
       }
-      if ((formData.category === 'question-paper' || formData.category === 'lab-manual') && formData.year && formData.semester) {
+      if ((formData.category === 'question-papers' || formData.category === 'lab-manuals') && formData.year && formData.semester) {
         title += ` (${formData.year} - Sem ${formData.semester})`;
       }
 
       // Create description based on category
       let description = formData.unit || null;
-      if (formData.category === 'question-paper' || formData.category === 'lab-manual') {
+      if (formData.category === 'question-papers' || formData.category === 'lab-manuals') {
         description = `Year: ${formData.year}, Semester: ${formData.semester}`;
         if (formData.unit) {
           description += `, Unit: ${formData.unit}`;
@@ -237,7 +237,7 @@ const UploadModal = ({ isOpen, onClose, onUploadSuccess }: UploadModalProps) => 
           </div>
           
           {/* Conditional fields based on category */}
-          {formData.category === 'lab-manual' && (
+          {formData.category === 'lab-manuals' && (
             <div className="space-y-2">
               <Label htmlFor="name">Lab Manual Name *</Label>
               <Input
@@ -251,7 +251,7 @@ const UploadModal = ({ isOpen, onClose, onUploadSuccess }: UploadModalProps) => 
             </div>
           )}
 
-          {(formData.category === 'question-paper' || formData.category === 'lab-manual') && (
+          {(formData.category === 'question-papers' || formData.category === 'lab-manuals') && (
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="year">Year *</Label>
@@ -297,7 +297,7 @@ const UploadModal = ({ isOpen, onClose, onUploadSuccess }: UploadModalProps) => 
             </div>
           )}
 
-          {formData.category === 'study-material' && (
+          {formData.category === 'study-materials' && (
             <div className="space-y-2">
               <Label htmlFor="unit">Unit (Optional)</Label>
               <Input
@@ -342,9 +342,9 @@ const UploadModal = ({ isOpen, onClose, onUploadSuccess }: UploadModalProps) => 
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="question-paper">Question Papers</SelectItem>
-                  <SelectItem value="study-material">Study Materials</SelectItem>
-                  <SelectItem value="lab-manual">Lab Manuals</SelectItem>
+                  <SelectItem value="question-papers">Question Papers</SelectItem>
+                  <SelectItem value="study-materials">Study Materials</SelectItem>
+                  <SelectItem value="lab-manuals">Lab Manuals</SelectItem>
                 </SelectContent>
               </Select>
             </div>
