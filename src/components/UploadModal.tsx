@@ -8,6 +8,7 @@ import { Upload, X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
+import { z } from 'zod';
 
 interface UploadModalProps {
   isOpen: boolean;
@@ -34,6 +35,9 @@ const UploadModal = ({ isOpen, onClose, onUploadSuccess }: UploadModalProps) => 
     department: '',
     category: '',
     uploadedBy: '',
+    year: '',
+    semester: '',
+    name: '', // For lab manual name
   });
   const [file, setFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -56,16 +60,64 @@ const UploadModal = ({ isOpen, onClose, onUploadSuccess }: UploadModalProps) => 
     }
   };
 
+  // Validation schema
+  const createValidationSchema = (category: string) => {
+    const baseSchema = {
+      subject: z.string().trim().min(1, "Subject is required").max(100, "Subject must be less than 100 characters"),
+      department: z.string().trim().min(1, "Department is required"),
+      category: z.string().min(1, "Category is required"),
+      uploadedBy: z.string().trim().min(1, "Your name is required").max(50, "Name must be less than 50 characters"),
+    };
+
+    if (category === 'lab-manual') {
+      return z.object({
+        ...baseSchema,
+        year: z.string().trim().min(1, "Year is required"),
+        semester: z.string().trim().min(1, "Semester is required"),
+        name: z.string().trim().min(1, "Lab manual name is required").max(100, "Name must be less than 100 characters"),
+      });
+    }
+
+    if (category === 'question-paper') {
+      return z.object({
+        ...baseSchema,
+        year: z.string().trim().min(1, "Year is required"),
+        semester: z.string().trim().min(1, "Semester is required"),
+      });
+    }
+
+    // Study material schema
+    return z.object({
+      ...baseSchema,
+      unit: z.string().trim().max(50, "Unit must be less than 50 characters").optional(),
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!file || !formData.subject || !formData.department || !formData.category || !formData.uploadedBy) {
+    if (!file) {
       toast({
         title: "Error",
-        description: "Please fill in all fields and select a file.",
+        description: "Please select a file to upload.",
         variant: "destructive",
       });
       return;
+    }
+
+    // Validate form data based on category
+    try {
+      const schema = createValidationSchema(formData.category);
+      schema.parse(formData);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        toast({
+          title: "Validation Error",
+          description: error.errors[0].message,
+          variant: "destructive",
+        });
+        return;
+      }
     }
 
     setIsUploading(true);
@@ -75,14 +127,32 @@ const UploadModal = ({ isOpen, onClose, onUploadSuccess }: UploadModalProps) => 
       const fileBuffer = await file.arrayBuffer();
       const base64String = btoa(String.fromCharCode(...new Uint8Array(fileBuffer)));
 
+      // Create title based on category
+      let title = formData.subject;
+      if (formData.category === 'lab-manual' && formData.name) {
+        title = `${formData.subject} - ${formData.name}`;
+      }
+      if ((formData.category === 'question-paper' || formData.category === 'lab-manual') && formData.year && formData.semester) {
+        title += ` (${formData.year} - Sem ${formData.semester})`;
+      }
+
+      // Create description based on category
+      let description = formData.unit || null;
+      if (formData.category === 'question-paper' || formData.category === 'lab-manual') {
+        description = `Year: ${formData.year}, Semester: ${formData.semester}`;
+        if (formData.unit) {
+          description += `, Unit: ${formData.unit}`;
+        }
+      }
+
       // Store file temporarily in pending_uploads table (not in storage yet)
       const { error: insertError } = await supabase
         .from('pending_uploads')
         .insert([
           {
-            title: formData.subject,
+            title: title,
             subject: formData.subject,
-            description: formData.unit || null,
+            description: description,
             department: formData.department,
             type: formData.category,
             uploaded_by: formData.uploadedBy,
@@ -124,6 +194,9 @@ const UploadModal = ({ isOpen, onClose, onUploadSuccess }: UploadModalProps) => 
         department: '',
         category: '',
         uploadedBy: '',
+        year: '',
+        semester: '',
+        name: '',
       });
       setFile(null);
       onUploadSuccess();
@@ -159,18 +232,83 @@ const UploadModal = ({ isOpen, onClose, onUploadSuccess }: UploadModalProps) => 
               onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
               placeholder="e.g., Data Structures and Algorithms"
               required
+              maxLength={100}
             />
           </div>
           
-          <div className="space-y-2">
-            <Label htmlFor="unit">Unit</Label>
-            <Input
-              id="unit"
-              value={formData.unit}
-              onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
-              placeholder="e.g., Unit 1, Unit 2"
-            />
-          </div>
+          {/* Conditional fields based on category */}
+          {formData.category === 'lab-manual' && (
+            <div className="space-y-2">
+              <Label htmlFor="name">Lab Manual Name *</Label>
+              <Input
+                id="name"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                placeholder="e.g., Basic Programming Lab"
+                required
+                maxLength={100}
+              />
+            </div>
+          )}
+
+          {(formData.category === 'question-paper' || formData.category === 'lab-manual') && (
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="year">Year *</Label>
+                <Select 
+                  value={formData.year}
+                  onValueChange={(value) => setFormData({ ...formData, year: value })}
+                  required
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select year" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1st Year">1st Year</SelectItem>
+                    <SelectItem value="2nd Year">2nd Year</SelectItem>
+                    <SelectItem value="3rd Year">3rd Year</SelectItem>
+                    <SelectItem value="4th Year">4th Year</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="semester">Semester *</Label>
+                <Select 
+                  value={formData.semester}
+                  onValueChange={(value) => setFormData({ ...formData, semester: value })}
+                  required
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select semester" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1">1st Semester</SelectItem>
+                    <SelectItem value="2">2nd Semester</SelectItem>
+                    <SelectItem value="3">3rd Semester</SelectItem>
+                    <SelectItem value="4">4th Semester</SelectItem>
+                    <SelectItem value="5">5th Semester</SelectItem>
+                    <SelectItem value="6">6th Semester</SelectItem>
+                    <SelectItem value="7">7th Semester</SelectItem>
+                    <SelectItem value="8">8th Semester</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          )}
+
+          {formData.category === 'study-material' && (
+            <div className="space-y-2">
+              <Label htmlFor="unit">Unit (Optional)</Label>
+              <Input
+                id="unit"
+                value={formData.unit}
+                onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
+                placeholder="e.g., Unit 1, Unit 2"
+                maxLength={50}
+              />
+            </div>
+          )}
           
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
@@ -220,6 +358,7 @@ const UploadModal = ({ isOpen, onClose, onUploadSuccess }: UploadModalProps) => 
               onChange={(e) => setFormData({ ...formData, uploadedBy: e.target.value })}
               placeholder="e.g., John Doe"
               required
+              maxLength={50}
             />
           </div>
           
