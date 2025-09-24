@@ -19,7 +19,6 @@ interface PendingUpload {
   file_data: string;
   file_size: string;
   user_id?: string;
-  ai_analysis?: string;
   created_at: string;
 }
 
@@ -94,7 +93,6 @@ const AdminReviewDashboard = () => {
             file_url: urlData.publicUrl,
             user_id: upload.user_id,
             status: 'approved',
-            ai_analysis: upload.ai_analysis,
           },
         ]);
 
@@ -172,10 +170,7 @@ const AdminReviewDashboard = () => {
         </Card>
       ) : (
         <div className="grid gap-4">
-          {pendingUploads.map((upload) => {
-            const aiAnalysis = upload.ai_analysis ? JSON.parse(upload.ai_analysis) : null;
-            
-            return (
+          {pendingUploads.map((upload) => (
               <Card key={upload.id} className="border-l-4 border-l-yellow-500">
                 <CardHeader>
                   <div className="flex items-start justify-between">
@@ -208,32 +203,7 @@ const AdminReviewDashboard = () => {
                         <span className="font-medium">Description:</span> {upload.description}
                       </div>
                     )}
-                  </div>
-
-                  {aiAnalysis && (
-                    <div className="bg-muted p-3 rounded-lg space-y-2">
-                      <div className="font-medium text-sm">AI Analysis:</div>
-                      <div className="text-sm space-y-1">
-                        <div>
-                          <span className="font-medium">Summary:</span> {aiAnalysis.summary}
-                        </div>
-                        <div>
-                          <span className="font-medium">Study-related:</span> 
-                          <Badge variant={aiAnalysis.isStudyRelated ? "default" : "destructive"} className="ml-2">
-                            {aiAnalysis.isStudyRelated ? "Yes" : "No"}
-                          </Badge>
-                        </div>
-                        <div>
-                          <span className="font-medium">Confidence:</span> {aiAnalysis.confidence}%
-                        </div>
-                        {aiAnalysis.reasoning && (
-                          <div>
-                            <span className="font-medium">Reasoning:</span> {aiAnalysis.reasoning}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )}
+                   </div>
 
                   <div className="flex gap-3">
                     <Button 
@@ -273,8 +243,7 @@ const AdminReviewDashboard = () => {
                   </div>
                 </CardContent>
               </Card>
-            );
-          })}
+            ))}
         </div>
       )}
     </div>

@@ -4,12 +4,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Upload, X, FileText, AlertTriangle } from 'lucide-react';
+import { Upload, X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import * as pdfjsLib from 'pdfjs-dist';
 
 interface UploadModalProps {
   isOpen: boolean;
@@ -39,13 +37,8 @@ const UploadModal = ({ isOpen, onClose, onUploadSuccess }: UploadModalProps) => 
   });
   const [file, setFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [analysisResult, setAnalysisResult] = useState<any>(null);
   const { toast } = useToast();
   const { user } = useAuth();
-
-  // Configure PDF.js worker
-  pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
 
   const formatFileSize = (bytes: number): string => {
     if (bytes === 0) return '0 Bytes';
@@ -55,86 +48,11 @@ const UploadModal = ({ isOpen, onClose, onUploadSuccess }: UploadModalProps) => 
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
-  const extractPDFText = async (file: File): Promise<string> => {
-    try {
-      const arrayBuffer = await file.arrayBuffer();
-      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-      let text = '';
-      
-      // Extract text from first 5 pages for analysis
-      const maxPages = Math.min(pdf.numPages, 5);
-      for (let i = 1; i <= maxPages; i++) {
-        const page = await pdf.getPage(i);
-        const textContent = await page.getTextContent();
-        const pageText = textContent.items
-          .map((item: any) => item.str)
-          .join(' ');
-        text += pageText + '\n';
-      }
-      
-      return text;
-    } catch (error) {
-      console.error('Error extracting PDF text:', error);
-      throw new Error('Failed to extract text from PDF');
-    }
-  };
 
-  const analyzePDFContent = async (file: File) => {
-    setIsAnalyzing(true);
-    try {
-      const text = await extractPDFText(file);
-      
-      const { data, error } = await supabase.functions.invoke('analyze-pdf', {
-        body: {
-          content: text,
-          fileName: file.name
-        }
-      });
-
-      if (error) throw error;
-
-      setAnalysisResult(data);
-      
-      if (data.isStudyRelated && data.confidence > 70) {
-        toast({
-          title: "✅ Study Material Detected",
-          description: `Content analysis: ${data.summary}`,
-        });
-      } else {
-        toast({
-          title: "⚠️ Requires Admin Review", 
-          description: "This file will be sent to admin for review before being published.",
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      console.error('Error analyzing PDF:', error);
-      toast({
-        title: "Analysis Failed",
-        description: "Could not analyze PDF content. File will require admin review.",
-        variant: "destructive",
-      });
-      setAnalysisResult({
-        isStudyRelated: false,
-        confidence: 0,
-        summary: 'Analysis failed',
-        reasoning: 'Could not extract or analyze content'
-      });
-    } finally {
-      setIsAnalyzing(false);
-    }
-  };
-
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
     if (selectedFile) {
       setFile(selectedFile);
-      setAnalysisResult(null);
-      
-      // Only analyze PDFs
-      if (selectedFile.type === 'application/pdf') {
-        await analyzePDFContent(selectedFile);
-      }
     }
   };
 
@@ -172,7 +90,6 @@ const UploadModal = ({ isOpen, onClose, onUploadSuccess }: UploadModalProps) => 
             file_data: base64String,
             file_size: formatFileSize(file.size),
             user_id: user?.id,
-            ai_analysis: analysisResult ? JSON.stringify(analysisResult) : null,
           },
         ]);
 
@@ -209,7 +126,6 @@ const UploadModal = ({ isOpen, onClose, onUploadSuccess }: UploadModalProps) => 
         uploadedBy: '',
       });
       setFile(null);
-      setAnalysisResult(null);
       onUploadSuccess();
       onClose();
     } catch (error) {
@@ -342,50 +258,8 @@ const UploadModal = ({ isOpen, onClose, onUploadSuccess }: UploadModalProps) => 
               </p>
             )}
             
-            {/* Analysis status for PDFs */}
-            {file?.type === 'application/pdf' && (
-              <div className="space-y-2">
-                {isAnalyzing && (
-                  <Alert>
-                    <FileText className="h-4 w-4" />
-                    <AlertDescription>
-                      Analyzing PDF content with AI...
-                    </AlertDescription>
-                  </Alert>
-                )}
-                
-                {analysisResult && (
-                  <Alert className={analysisResult.isStudyRelated && analysisResult.confidence > 70 ? "border-green-200 bg-green-50" : "border-yellow-200 bg-yellow-50"}>
-                    {analysisResult.isStudyRelated && analysisResult.confidence > 70 ? (
-                      <FileText className="h-4 w-4 text-green-600" />
-                    ) : (
-                      <AlertTriangle className="h-4 w-4 text-yellow-600" />
-                    )}
-                    <AlertDescription>
-                      <div className="font-medium mb-1">
-                        {analysisResult.isStudyRelated && analysisResult.confidence > 70 
-                          ? '✅ Study Material Detected'
-                          : '⚠️ Requires Admin Review'
-                        }
-                      </div>
-                      <div className="text-sm">
-                        {analysisResult.summary} (Confidence: {analysisResult.confidence}%)
-                      </div>
-                      {(!analysisResult.isStudyRelated || analysisResult.confidence <= 70) && (
-                        <div className="text-sm mt-1 text-muted-foreground">
-                          This file will be sent to admin for review before being published.
-                        </div>
-                      )}
-                    </AlertDescription>
-                  </Alert>
-                )}
-              </div>
-            )}
-            
             <p className="text-sm text-muted-foreground">
               Supported formats: PDF, DOC, DOCX, PPT, PPTX, TXT (Max 10MB)
-              <br />
-              PDF files are automatically analyzed for study-related content.
             </p>
           </div>
           
@@ -393,8 +267,8 @@ const UploadModal = ({ isOpen, onClose, onUploadSuccess }: UploadModalProps) => 
             <Button type="button" variant="outline" onClick={onClose} className="flex-1">
               Cancel
             </Button>
-            <Button type="submit" className="btn-primary flex-1" disabled={isUploading || isAnalyzing}>
-              {isUploading ? 'Uploading...' : isAnalyzing ? 'Analyzing...' : 'Upload Resource'}
+            <Button type="submit" className="btn-primary flex-1" disabled={isUploading}>
+              {isUploading ? 'Uploading...' : 'Upload Resource'}
             </Button>
           </div>
         </form>

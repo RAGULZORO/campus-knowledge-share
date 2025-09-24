@@ -40,7 +40,6 @@ export type Database = {
       }
       pending_uploads: {
         Row: {
-          ai_analysis: string | null
           created_at: string
           department: string
           description: string | null
@@ -56,7 +55,6 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
-          ai_analysis?: string | null
           created_at?: string
           department: string
           description?: string | null
@@ -72,7 +70,6 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
-          ai_analysis?: string | null
           created_at?: string
           department?: string
           description?: string | null
@@ -124,7 +121,6 @@ export type Database = {
       }
       resources: {
         Row: {
-          ai_analysis: string | null
           category_id: string | null
           created_at: string
           department: string
@@ -145,7 +141,6 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
-          ai_analysis?: string | null
           category_id?: string | null
           created_at?: string
           department: string
@@ -166,7 +161,6 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
-          ai_analysis?: string | null
           category_id?: string | null
           created_at?: string
           department?: string
