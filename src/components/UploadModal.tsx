@@ -8,6 +8,7 @@ import { Upload, X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
+import { useAdmin } from '@/hooks/use-admin';
 import { z } from 'zod';
 
 interface UploadModalProps {
@@ -43,6 +44,7 @@ const UploadModal = ({ isOpen, onClose, onUploadSuccess }: UploadModalProps) => 
   const [isUploading, setIsUploading] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
+  const { isAdmin } = useAdmin();
 
   const formatFileSize = (bytes: number): string => {
     if (bytes === 0) return '0 Bytes';
@@ -145,47 +147,82 @@ const UploadModal = ({ isOpen, onClose, onUploadSuccess }: UploadModalProps) => 
         }
       }
 
-      // Store file temporarily in pending_uploads table (not in storage yet)
-      const { error: insertError } = await supabase
-        .from('pending_uploads')
-        .insert([
-          {
-            title: title,
-            subject: formData.subject,
-            description: description,
-            department: formData.department,
-            type: formData.category,
-            uploaded_by: formData.uploadedBy,
-            file_name: file.name,
-            file_data: base64String,
-            file_size: formatFileSize(file.size),
-            user_id: user?.id,
-          },
-        ]);
+      if (isAdmin) {
+        // Admin upload: Upload directly to resources table
+        // Convert base64 back to file for upload
+        const binaryString = atob(base64String);
+        const bytes = new Uint8Array(binaryString.length);
+        for (let i = 0; i < binaryString.length; i++) {
+          bytes[i] = binaryString.charCodeAt(i);
+        }
+        const fileForUpload = new File([bytes], file.name);
+        
+        // Upload file to storage
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+        const filePath = `${formData.category}/${fileName}`;
 
-      if (insertError) throw insertError;
+        const { error: uploadError } = await supabase.storage
+          .from('resources')
+          .upload(filePath, fileForUpload);
 
-      // Send email notification to admin
-      try {
-        await supabase.functions.invoke('send-upload-notification', {
-          body: {
-            fileName: file.name,
-            uploaderName: formData.uploadedBy,
-            subject: formData.subject,
-            department: formData.department,
-            category: formData.category,
-          }
+        if (uploadError) throw uploadError;
+
+        // Get the public URL for the uploaded file
+        const { data: urlData } = supabase.storage
+          .from('resources')
+          .getPublicUrl(filePath);
+
+        // Insert directly to resources table with approved status
+        const { error: insertError } = await supabase
+          .from('resources')
+          .insert([
+            {
+              title: title,
+              subject: formData.subject,
+              description: description,
+              department: formData.department,
+              type: formData.category,
+              uploaded_by: formData.uploadedBy,
+              file_size: formatFileSize(file.size),
+              file_url: urlData.publicUrl,
+              user_id: user?.id,
+              status: 'approved',
+            },
+          ]);
+
+        if (insertError) throw insertError;
+
+        toast({
+          title: "Success!",
+          description: "File uploaded and approved successfully as admin.",
         });
-        console.log('Admin notification sent successfully');
-      } catch (emailError) {
-        console.error('Failed to send admin notification:', emailError);
-        // Don't fail the upload if email fails
-      }
+      } else {
+        // Regular user upload: Store in pending_uploads table for admin review
+        const { error: insertError } = await supabase
+          .from('pending_uploads')
+          .insert([
+            {
+              title: title,
+              subject: formData.subject,
+              description: description,
+              department: formData.department,
+              type: formData.category,
+              uploaded_by: formData.uploadedBy,
+              file_name: file.name,
+              file_data: base64String,
+              file_size: formatFileSize(file.size),
+              user_id: user?.id,
+            },
+          ]);
 
-      toast({
-        title: "Success!",
-        description: "File sent to admin for review. You'll be notified once it's approved.",
-      });
+        if (insertError) throw insertError;
+
+        toast({
+          title: "Success!",
+          description: "File sent to admin for review. You'll be notified once it's approved.",
+        });
+      }
 
       // Reset form
       setFormData({
