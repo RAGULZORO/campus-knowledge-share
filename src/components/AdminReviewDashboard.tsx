@@ -29,11 +29,13 @@ const AdminReviewDashboard = () => {
 
   const fetchPendingUploads = async () => {
     try {
+      console.log('Fetching pending uploads...');
       const { data, error } = await supabase
         .from('pending_uploads')
         .select('*')
         .order('created_at', { ascending: false });
 
+      console.log('Pending uploads response:', { data, error });
       if (error) throw error;
       setPendingUploads(data || []);
     } catch (error) {
