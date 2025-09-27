@@ -38,54 +38,6 @@ export type Database = {
         }
         Relationships: []
       }
-      pending_uploads: {
-        Row: {
-          created_at: string
-          department: string
-          description: string | null
-          file_data: string
-          file_name: string
-          file_size: string
-          id: string
-          subject: string
-          title: string
-          type: string
-          updated_at: string
-          uploaded_by: string
-          user_id: string | null
-        }
-        Insert: {
-          created_at?: string
-          department: string
-          description?: string | null
-          file_data: string
-          file_name: string
-          file_size: string
-          id?: string
-          subject: string
-          title: string
-          type: string
-          updated_at?: string
-          uploaded_by: string
-          user_id?: string | null
-        }
-        Update: {
-          created_at?: string
-          department?: string
-          description?: string | null
-          file_data?: string
-          file_name?: string
-          file_size?: string
-          id?: string
-          subject?: string
-          title?: string
-          type?: string
-          updated_at?: string
-          uploaded_by?: string
-          user_id?: string | null
-        }
-        Relationships: []
-      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -129,10 +81,6 @@ export type Database = {
           file_size: string | null
           file_url: string | null
           id: string
-          review_notes: string | null
-          reviewed_at: string | null
-          reviewed_by: string | null
-          status: string | null
           subject: string
           title: string
           type: string
@@ -149,10 +97,6 @@ export type Database = {
           file_size?: string | null
           file_url?: string | null
           id?: string
-          review_notes?: string | null
-          reviewed_at?: string | null
-          reviewed_by?: string | null
-          status?: string | null
           subject: string
           title: string
           type: string
@@ -169,10 +113,6 @@ export type Database = {
           file_size?: string | null
           file_url?: string | null
           id?: string
-          review_notes?: string | null
-          reviewed_at?: string | null
-          reviewed_by?: string | null
-          status?: string | null
           subject?: string
           title?: string
           type?: string
