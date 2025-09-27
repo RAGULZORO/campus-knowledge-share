@@ -1,9 +1,8 @@
 
-import { Search, Upload, StickyNote, LogOut, User, Shield } from 'lucide-react';
+import { Search, Upload, StickyNote, LogOut, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/hooks/use-auth';
-import { useAdmin } from '@/hooks/use-admin';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { ThemeToggle } from '@/components/theme-toggle';
@@ -27,7 +26,6 @@ interface HeaderProps {
 
 const Header = ({ searchQuery, onSearchChange, onUploadClick }: HeaderProps) => {
   const { user, signOut } = useAuth();
-  const { isAdmin } = useAdmin();
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -86,17 +84,6 @@ const Header = ({ searchQuery, onSearchChange, onUploadClick }: HeaderProps) => 
               
               {user ? (
                 <div className="flex items-center gap-2">
-                  {isAdmin && (
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      onClick={() => navigate('/admin')}
-                      className="flex items-center gap-2"
-                    >
-                      <Shield className="h-4 w-4" />
-                      <span className="hidden sm:inline">Admin</span>
-                    </Button>
-                  )}
                   <Button variant="outline" size="sm" className="flex items-center gap-2">
                     <User className="h-4 w-4" />
                     <span className="hidden sm:inline">{(user.user_metadata?.display_name || user.email || 'U')[0].toUpperCase()}</span>
