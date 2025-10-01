@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { FileText, CheckCircle, XCircle } from 'lucide-react';
+import { FileText, CheckCircle, XCircle, Eye } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
@@ -124,6 +124,34 @@ const AdminReviewDashboard = () => {
     }
   };
 
+  const handlePreview = (upload: PendingUpload) => {
+    try {
+      // Convert base64 to blob
+      const binaryString = atob(upload.file_data);
+      const bytes = new Uint8Array(binaryString.length);
+      for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+      const blob = new Blob([bytes], { type: 'application/pdf' });
+      const url = URL.createObjectURL(blob);
+      
+      // Open in new tab
+      window.open(url, '_blank');
+      
+      toast({
+        title: "File Opened",
+        description: "File opened in new tab for preview.",
+      });
+    } catch (error) {
+      console.error('Error previewing file:', error);
+      toast({
+        title: "Error",
+        description: "Failed to preview file.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleReject = async (uploadId: string) => {
     try {
       const { error } = await supabase
@@ -209,12 +237,21 @@ const AdminReviewDashboard = () => {
 
                   <div className="flex gap-3">
                     <Button 
+                      onClick={() => handlePreview(upload)}
+                      variant="outline"
+                      className="flex-1"
+                    >
+                      <Eye className="w-4 h-4 mr-2" />
+                      Preview File
+                    </Button>
+                    
+                    <Button 
                       onClick={() => handleApprove(upload)}
                       className="flex-1"
                       variant="default"
                     >
                       <CheckCircle className="w-4 h-4 mr-2" />
-                      Approve & Upload
+                      Approve
                     </Button>
                     
                     <AlertDialog>
