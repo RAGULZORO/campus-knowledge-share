@@ -21,6 +21,7 @@ const ResourceGrid = ({ searchTerm, selectedCategory, refreshTrigger }: Resource
       let query = supabase
         .from('resources')
         .select('*')
+        .eq('status', 'approved')
         .order('created_at', { ascending: false });
 
       if (selectedCategory && selectedCategory !== 'all') {

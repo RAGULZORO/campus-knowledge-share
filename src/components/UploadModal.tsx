@@ -125,9 +125,16 @@ const UploadModal = ({ isOpen, onClose, onUploadSuccess }: UploadModalProps) => 
     setIsUploading(true);
 
     try {
-      // Convert file to base64 for temporary storage
+      // Convert file to base64 for temporary storage (chunked to avoid argument limit)
       const fileBuffer = await file.arrayBuffer();
-      const base64String = btoa(String.fromCharCode(...new Uint8Array(fileBuffer)));
+      const uint8Array = new Uint8Array(fileBuffer);
+      let binaryString = '';
+      const chunkSize = 8192;
+      for (let i = 0; i < uint8Array.length; i += chunkSize) {
+        const chunk = uint8Array.slice(i, i + chunkSize);
+        binaryString += String.fromCharCode.apply(null, Array.from(chunk));
+      }
+      const base64String = btoa(binaryString);
 
       // Create title based on category
       let title = formData.subject;
