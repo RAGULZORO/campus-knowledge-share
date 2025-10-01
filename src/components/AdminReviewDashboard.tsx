@@ -56,12 +56,16 @@ const AdminReviewDashboard = () => {
 
   const handleApprove = async (upload: PendingUpload) => {
     try {
-      // Convert base64 back to file
-      const binaryString = atob(upload.file_data);
-      const bytes = new Uint8Array(binaryString.length);
-      for (let i = 0; i < binaryString.length; i++) {
-        bytes[i] = binaryString.charCodeAt(i);
+      // Convert bytea hex format to file
+      let fileData = upload.file_data;
+      
+      // Remove PostgreSQL bytea hex prefix if present
+      if (fileData.startsWith('\\x')) {
+        fileData = fileData.substring(2);
       }
+      
+      // Convert hex string to bytes
+      const bytes = new Uint8Array(fileData.match(/.{1,2}/g)!.map(byte => parseInt(byte, 16)));
       const file = new File([bytes], upload.file_name);
       
       // Upload file to storage
@@ -126,12 +130,16 @@ const AdminReviewDashboard = () => {
 
   const handlePreview = (upload: PendingUpload) => {
     try {
-      // Convert base64 to blob
-      const binaryString = atob(upload.file_data);
-      const bytes = new Uint8Array(binaryString.length);
-      for (let i = 0; i < binaryString.length; i++) {
-        bytes[i] = binaryString.charCodeAt(i);
+      // Convert bytea hex format to blob
+      let fileData = upload.file_data;
+      
+      // Remove PostgreSQL bytea hex prefix if present
+      if (fileData.startsWith('\\x')) {
+        fileData = fileData.substring(2);
       }
+      
+      // Convert hex string to bytes
+      const bytes = new Uint8Array(fileData.match(/.{1,2}/g)!.map(byte => parseInt(byte, 16)));
       const blob = new Blob([bytes], { type: 'application/pdf' });
       const url = URL.createObjectURL(blob);
       
