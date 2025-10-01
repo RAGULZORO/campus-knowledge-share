@@ -21,7 +21,7 @@ export interface Resource {
   subject: string;
   unit?: string;
   department: string;
-  category: 'question-papers' | 'study-materials' | 'lab-manuals';
+  category: 'question-paper' | 'study-material' | 'lab-manual';
   uploadedBy: string;
   uploadDate: string;
   downloads: number;
@@ -39,11 +39,11 @@ interface ResourceCardProps {
 
 const getCategoryColor = (category: string) => {
   switch (category) {
-    case 'question-papers':
+    case 'question-paper':
       return 'bg-primary text-primary-foreground';
-    case 'study-materials':
+    case 'study-material':
       return 'bg-secondary text-secondary-foreground';
-    case 'lab-manuals':
+    case 'lab-manual':
       return 'bg-accent text-accent-foreground';
     default:
       return 'bg-muted text-muted-foreground';
@@ -52,11 +52,11 @@ const getCategoryColor = (category: string) => {
 
 const getCategoryLabel = (category: string) => {
   switch (category) {
-    case 'question-papers':
+    case 'question-paper':
       return 'Question Paper';
-    case 'study-materials':
+    case 'study-material':
       return 'Study Material';
-    case 'lab-manuals':
+    case 'lab-manual':
       return 'Lab Manual';
     default:
       return 'Resource';

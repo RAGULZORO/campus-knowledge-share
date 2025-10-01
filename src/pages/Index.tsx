@@ -57,8 +57,8 @@ const Index = () => {
         <div className="mb-6">
           <h2 className="text-2xl font-bold mb-2">
             {activeCategory === 'all' ? 'All Resources' : 
-             activeCategory === 'question-papers' ? 'Question Papers' :
-             activeCategory === 'study-materials' ? 'Study Materials' : 'Lab Manuals'}
+             activeCategory === 'question-paper' ? 'Question Papers' :
+             activeCategory === 'study-material' ? 'Study Materials' : 'Lab Manuals'}
           </h2>
         </div>
         

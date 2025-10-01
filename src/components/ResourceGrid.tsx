@@ -39,7 +39,7 @@ const ResourceGrid = ({ searchTerm, selectedCategory, refreshTrigger }: Resource
         subject: item.subject,
         unit: item.description || '', // Use description as unit or empty
         department: item.department,
-        category: item.type as 'question-papers' | 'study-materials' | 'lab-manuals',
+        category: item.type as 'question-paper' | 'study-material' | 'lab-manual',
         uploadedBy: item.uploaded_by,
         uploadDate: new Date(item.created_at).toLocaleDateString(),
         downloads: item.download_count,

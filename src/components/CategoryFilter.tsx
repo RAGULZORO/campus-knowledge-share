@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { FileText, BookOpen, FlaskConical, Filter } from 'lucide-react';
 
-export type ResourceCategory = 'all' | 'question-papers' | 'study-materials' | 'lab-manuals';
+export type ResourceCategory = 'all' | 'question-paper' | 'study-material' | 'lab-manual';
 
 interface CategoryFilterProps {
   activeCategory: ResourceCategory;
@@ -16,19 +16,19 @@ const categories = [
     description: 'Browse everything'
   },
   {
-    id: 'question-papers' as ResourceCategory,
+    id: 'question-paper' as ResourceCategory,
     label: 'Question Papers',
     icon: FileText,
     description: 'Previous year exams'
   },
   {
-    id: 'study-materials' as ResourceCategory,
+    id: 'study-material' as ResourceCategory,
     label: 'Study Materials',
     icon: BookOpen,
     description: 'Notes & guides'
   },
   {
-    id: 'lab-manuals' as ResourceCategory,
+    id: 'lab-manual' as ResourceCategory,
     label: 'Lab Manuals',
     icon: FlaskConical,
     description: 'Practical guides'
